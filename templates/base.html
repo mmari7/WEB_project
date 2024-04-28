@@ -8,12 +8,21 @@
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
           crossorigin="anonymous">
     {% block head %}{% endblock %}
-    <title>{{title}}</title>
+    <title>my_app</title>
 </head>
     <body>
+    <nav class="navbar">
+        {% if current_user.is_authenticated %}
+            <a class="navbar-brand" href="/logout">{{ current_user.name }}</a>
+        {% else %}
+            <p>
+                <a class="btn btn-primary " href="/register">Зарегистрироваться</a>
+                <a class="btn btn-success" href="/login">Войти</a>
+                </p>
+        {% endif %}
+    </nav>
     <!-- Begin page content -->
-        <div class="alert-danger h1 text-danger">Миссия Колонизация Марса</div>
-        <h4>И на Марсе будут яблони цвести!</h4>
+        <div class="alert-danger h1 text-danger">WEB</div>
         {% block content %}{% endblock %}
     </body>
 </html>
