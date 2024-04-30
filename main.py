@@ -40,7 +40,6 @@ def parse():
             discount = int(request.form.get('discount')) if request.form.get('discount') else 0
             for i in cat:
                 data_products += parser(seo=i, discount=discount)
-            data_products = list(set(data_products))
             if data_products:
                 col = len(data_products)
                 return render_template("parse.html", message=f"Товары категории: {', '.join(cat)}",
