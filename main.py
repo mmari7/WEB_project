@@ -143,12 +143,12 @@ def add_or_exclude_item_to_favorite(url, price, sku, name, wishlist_id):
     if wish:
         current_user.wishes.remove(wish)
     else:
-        link = f'https://www.wildberries.ru/catalog/{sku}/detail.aspx?targetUrl=BP'
+        link = f'https://www.wildberries.ru/catalog/{str(sku)}/detail.aspx?targetUrl=BP'
         wish = Wish()
         wish.name = str(name).replace('%20', '')
-        wish.price = price
-        wish.link = link
-        wish.wishlist_id = wishlist_id
+        wish.price = int(price)
+        wish.link = str(link)
+        wish.wishlist_id = int(wishlist_id)
     db_sess.add(wish)
     db_sess.commit()
     return redirect(f'/{url}')
