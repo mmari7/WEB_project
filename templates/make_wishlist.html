@@ -21,24 +21,23 @@
         <a class="navbar-item" href="/parse">Find smth</a>
         {% if current_user.is_authenticated %}
             <a class="navbar-name" href="/logout">{{ current_user.name }}</a>
-            <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">My Wishlists</a>
-            <div class="dropdown-menu">
-                {% for wishlist in current_user.wishlists %}
-                    <a class="dropdown-item" href="/wishlist/{{ wishlist.id }}/{{ wishlist.name }}">{{ wishlist.name }}</a>
-                {% endfor %}
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="/make_wishlist">New wishlist</a>
-            </div>
-            </li>
-        {% else %}
-            <p>
-                <a class="btn btn-primary " href="/register">Register</a>
-                <a class="btn btn-success" href="/login">Log In</a>
-                </p>
+            <a class="navbar-item" href="/make_wishlist">Make own wishlist</a>
         {% endif %}
     </nav>
-    <!-- Begin page content -->
-        {% block content %}{% endblock %}
+    <h1>Make your own Wishlist</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.name.label }}<br>
+            {{ form.name(class="form-control") }}<br>
+            {% for error in form.name.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        <p>{{ form.is_private() }} {{ form.is_private.label }}</p>
+        <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+        <div>{{ message }}</div>
+    </form>
     </body>
 </html>

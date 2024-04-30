@@ -3,14 +3,13 @@ import requests
 import json
 import pandas as pd
 from retry import retry
-import openpyxl
-import xlsxwriter
+# import openpyxl
+# import xlsxwriter
 
 """
-Возможные фильтра(для ручного ввода): 
-    -нижняя цена
-    -верхняя цена
+Возможные фильтры: 
     -скидка (%)
+    -категория
 Данные которые собирает парсер:
             'id': артикул,
             'name': название,
@@ -25,6 +24,9 @@ import xlsxwriter
             'reviewRating': рейтинг по отзывам,
             'promoTextCard': промо текст карточки,
             'promoTextCat': промо текст категории
+            'pics': кол-во картинок
+            'img': ссылки на картинки
+            'link': ссылка
 """
 
 
@@ -41,7 +43,8 @@ def get_data_category(catalogs_wb: dict) -> list:  # сбор данных ка�
             'name': f"{catalogs_wb['name']}",
             'shard': catalogs_wb.get('shard', None),
             'url': catalogs_wb['url'],
-            'query': catalogs_wb.get('query', None)
+            'query': catalogs_wb.get('query', None),
+            'seo': catalogs_wb.get('seo', catalogs_wb['name'])
         })
     elif isinstance(catalogs_wb, dict):
         catalog_data.extend(get_data_category(catalogs_wb['childs']))
@@ -51,16 +54,13 @@ def get_data_category(catalogs_wb: dict) -> list:  # сбор данных ка�
     return catalog_data
 
 
-def search_category_in_catalog(url: str, catalog_list: list) -> dict:  # ????
-    """проверка пользовательской ссылки на наличии в каталоге"""
+def search_category_in_catalog(seo, catalog_list: list) -> dict:  # ????
     for catalog in catalog_list:
-        if catalog['url'] == url.split('https://www.wildberries.ru')[-1]:
-            print(f'найдено совпадение: {catalog["name"]}')
+        if catalog.get('seo') == seo or catalog['name'] == seo:
             return catalog
 
 
 def get_data_from_json(json_file: dict) -> list:
-    """извлекаем из json данные"""
     data_list = []
     for data in json_file['data']['products']:
         sku = data.get('id')
@@ -77,7 +77,7 @@ def get_data_from_json(json_file: dict) -> list:
         promoTextCard = data.get('promoTextCard')
         promoTextCat = data.get('promoTextCat')
         pics = data.get('pics')
-        img = get_images(sku, pics)
+        img = get_images(int(sku), pics)
         data_list.append({
             'id': sku,
             'name': name,
@@ -100,7 +100,7 @@ def get_data_from_json(json_file: dict) -> list:
     return data_list
 
 
-def get_images(sku: str, pics: str):
+def get_images(sku: int, pics: str):
     _short_id = sku // 100000
     """Используем match/case для определения basket на основе _short_id"""
     if 0 <= _short_id <= 143:
@@ -144,7 +144,7 @@ def get_images(sku: str, pics: str):
 
 
 @retry(Exception, tries=-1, delay=0)
-def scrap_page(page: int, shard: str, query: str, low_price: int, top_price: int, discount: int = None) -> dict:
+def scrap_page(page: int, shard: str, query: str, discount: int = None) -> dict:
     """Сбор данных со страниц"""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/113.0",
@@ -165,75 +165,55 @@ def scrap_page(page: int, shard: str, query: str, low_price: int, top_price: int
           f'&dest=-1257786' \
           f'&locale=ru' \
           f'&page={page}' \
-          f'&priceU={low_price * 100};{top_price * 100}' \
           f'&sort=popular&spp=0' \
           f'&{query}' \
           f'&discount={discount}'
     r = requests.get(url, headers=headers)
-    print(f'Статус: {r.status_code} Страница {page} Идет сбор...')
     return r.json()
 
 
-def save_excel(data: list, filename: str):
-    df = pd.DataFrame(data)
-    writer = pd.ExcelWriter(f'{filename}.xlsx')
-    df.to_excel(writer, sheet_name='data', index=False)
-    writer.sheets['data'].set_column(0, 1, width=10)
-    writer.sheets['data'].set_column(1, 2, width=34)
-    writer.sheets['data'].set_column(2, 3, width=8)
-    writer.sheets['data'].set_column(3, 4, width=9)
-    writer.sheets['data'].set_column(4, 5, width=4)
-    writer.sheets['data'].set_column(5, 6, width=10)
-    writer.sheets['data'].set_column(6, 7, width=5)
-    writer.sheets['data'].set_column(7, 8, width=25)
-    writer.sheets['data'].set_column(8, 9, width=10)
-    writer.sheets['data'].set_column(9, 10, width=11)
-    writer.sheets['data'].set_column(10, 11, width=13)
-    writer.sheets['data'].set_column(11, 12, width=19)
-    writer.sheets['data'].set_column(12, 13, width=19)
-    writer.sheets['data'].set_column(13, 14, width=67)
-    writer.close()
-    print(f'Все сохранено в {filename}.xlsx\n')
+# def save_excel(data: list, filename: str):
+#     df = pd.DataFrame(data)
+#     writer = pd.ExcelWriter(f'{filename}.xlsx')
+#     df.to_excel(writer, sheet_name='data', index=False)
+#     writer.sheets['data'].set_column(0, 1, width=10)
+#     writer.sheets['data'].set_column(1, 2, width=34)
+#     writer.sheets['data'].set_column(2, 3, width=8)
+#     writer.sheets['data'].set_column(3, 4, width=9)
+#     writer.sheets['data'].set_column(4, 5, width=4)
+#     writer.sheets['data'].set_column(5, 6, width=10)
+#     writer.sheets['data'].set_column(6, 7, width=5)
+#     writer.sheets['data'].set_column(7, 8, width=25)
+#     writer.sheets['data'].set_column(8, 9, width=10)
+#     writer.sheets['data'].set_column(9, 10, width=11)
+#     writer.sheets['data'].set_column(10, 11, width=13)
+#     writer.sheets['data'].set_column(11, 12, width=19)
+#     writer.sheets['data'].set_column(12, 13, width=19)
+#     writer.sheets['data'].set_column(13, 14, width=67)
+#     writer.close()
+#     print(f'Все сохранено в {filename}.xlsx\n')
 
 
-def parser(url: str, low_price: int = 1, top_price: int = 1000000, discount: int = 0):
+def parser(seo: str, discount: int = 0):
     # получаем данные по заданному каталогу
     catalog_data = get_data_category(get_catalogs_wb())
     try:
         # поиск введенной категории в общем каталоге
-        category = search_category_in_catalog(url=url, catalog_list=catalog_data)
+        category = search_category_in_catalog(seo=seo, catalog_list=catalog_data)
         data_list = []
-        for page in range(1, 11):  # вб отдает 50 страниц товара
+        for page in range(1, 50):  # вб отдает 50 страниц товара
             data = scrap_page(
                 page=page,
                 shard=category['shard'],
                 query=category['query'],
-                low_price=low_price,
-                top_price=top_price,
                 discount=discount)
-            print(f'Добавлено позиций: {len(get_data_from_json(data))}')
-            if len(get_data_from_json(data)) > 0:
-                data_list.extend(get_data_from_json(data))
+            data_page = get_data_from_json(data)
+            if len(data_page) > 0:
+                data_list.extend(data_page)
             else:
                 break
-        print(f'Сбор данных завершен. Собрано: {len(data_list)} товаров.')
-        save_excel(data_list, f'{category["name"]}_from_{low_price}_to_{top_price}')
-        print(f'Ссылка для проверки: {url}?priceU={low_price * 100};{top_price * 100}&discount={discount}')
+        return data_list
     except TypeError:
         print('Ошибка! Возможно не верно указан раздел. Удалите все доп фильтры с ссылки')
     except PermissionError:
         print('Ошибка! Вы забыли закрыть созданный ранее excel файл. Закройте и повторите попытку')
-
-
-if __name__ == '__main__':
-    url = 'https://www.wildberries.ru/catalog/elektronika/planshety'
-    low_price = 100
-    top_price = 1000000
-    discount = 10
-    start = datetime.datetime.now()
-
-    parser(url=url, low_price=low_price, top_price=top_price, discount=discount)
-
-    end = datetime.datetime.now()
-    total = end - start
-    print("Затраченное время:" + str(total))
