@@ -146,7 +146,7 @@ def add_or_exclude_item_to_favorite(url, price, sku, name, wishlist_id):
     else:
         link = f'https://www.wildberries.ru/catalog/{sku}/detail.aspx?targetUrl=BP'
         wish = Wish()
-        wish.name = name
+        wish.name = str(name).replace('%20', '')
         wish.price = price
         wish.link = link
         wish.wishlist_id = wishlist_id
