@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Wishlist {{ wishlist_name }}</h2>
+{% for wish in wishes %}
+    <div class="card mb-3" style="max-width: 540px;">
+        <div class="row g-0">
+            <div class="col-md-4">
+                <img src="#" class="img-fluid rounded-start" alt="Image">
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <h5 class="card-title">{{ wish['name'] }}</h5>
+                    <p class="card-text">Price: {{ wish['price'] }}</p>
+                    <a class="btn-primary" href="{{ wish['link'] }}">Buy now</a>
+                    {% if current_user.is_authenticated %}
+                        <a class="btn-danger" href="/favourite/remove/{{ 'wishlist'+' '+wishlist_name }}/{{ wish['price'] }}/{{ wish['name'] }}/{{ wish.wishlist_id }}/{{ wish['link'].replace('/', '!') }}">Remove</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+{% endblock %}

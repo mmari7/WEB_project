@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Блок с фильтрами -->
+<h2>Here you can find whatever you want</h2>
+<!-- Каталог -->
+<form class="login_form" method="post" enctype="multipart/form-data">
+<div class="dropdown">
+  <button onclick="myFunction()" class="dropbtn" type="button">Catalog</button>
+  <div id="myDropdown" class="dropdown-content">
+    <input type="text" placeholder="Поиск.." id="myInput" onkeyup="filterFunction()">
+    {% for cat in catalog %}
+      <li><input type="checkbox" id="{{ cat['seo'] }}" name="{{ cat['seo'] }}">
+        <label for="{{ cat['seo'] }}">{{ cat["seo"] }}</label>
+      </li>
+    {% endfor %}
+  </div>
+</div>
+<script>
+function myFunction() {
+  document.getElementById("myDropdown").classList.toggle("show");
+}
+function filterFunction() {
+  var input, filter, ul, li, a, i;
+  input = document.getElementById("myInput");
+  filter = input.value.toUpperCase();
+  div = document.getElementById("myDropdown");
+  a = div.getElementsByTagName("li");
+  for (i = 0; i < a.length; i++) {
+    txtЗначение = a[i].textСодержание || a[i].innerText;
+    if (txtЗначение.toUpperCase().indexOf(filter) > -1) {
+      a[i].style.display = "";
+    } else {
+      a[i].style.display = "none";
+    }
+  }
+}
+</script>
+<!-- Цена -->
+<input class="price" id="price" placeholder="Discount" type="number" name="min_price">
+<button type="submit" class="btn btn-primary">Show results</button>
+</form>
+<label>{{ message }}</label>
+<!-- Карточки товара -->
+<div class="row">
+  <div class="column">
+    {% for item in data_products[0::4] %}
+
+      <div class="card mb-4" style="width: 18rem;">
+        <img class="card-img-top" src={{item['img'].split(';')[0]}} alt="Card image cap">
+        <div class="card-body">
+          <h5 class="card-title">{{ item['name'] }}</h5>
+          <p class="card-text">Price {{ item['price'] }}</p>
+          <a href={{item['link']}} class="btn btn-primary">Buy now</a>
+          {% if current_user.is_authenticated %}
+          <form action="" method="post">
+           <a class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Favourite</a>
+            <div class="dropdown-menu">
+                {% for wishlist in current_user.wishlists %}
+                    <a class="dropdown-item" type='submit'
+                       href="/favourite/add/parse/{{ item['price'] }}/{{ item['name'] }}/{{ wishlist.id }}/{{ item['link'].replace('/', '!') }}">
+                      {{ wishlist.name }}</a>
+                {% endfor %}
+                <div class="dropdown-divider"></div>
+            </div>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="column">
+    {% for item in data_products[1::4] %}
+      <div class="card mb-4" style="width: 18rem;">
+        <img class="card-img-top" src={{item['img'].split(';')[0]}} alt="Card image cap">
+        <div class="card-body">
+          <h5 class="card-title">{{item['name']}}</h5>
+          <p class="card-text">Price {{item['price']}}</p>
+          <a href={{item['link']}} class="btn btn-primary">Buy now</a>
+          {% if current_user.is_authenticated %}
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Favourite</a>
+            <div class="dropdown-menu">
+                {% for wishlist in current_user.wishlists %}
+                    <a class="dropdown-item"
+                       href="/favourite/add/parse/{{ item['price'] }}/{{ item['name'] }}/{{ wishlist.id }}/{{ item['link'].replace('/', '!') }}">
+                      {{ wishlist.name }}</a>
+                {% endfor %}
+                <div class="dropdown-divider"></div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="column">
+    {% for item in data_products[2::4] %}
+      <div class="card mb-4" style="width: 18rem;">
+        <img class="card-img-top" src={{item['img'].split(';')[0]}} alt="Card image cap">
+        <div class="card-body">
+          <h5 class="card-title">{{item['name']}}</h5>
+          <p class="card-text">Price {{item['price']}}</p>
+          <a href={{item['link']}} class="btn btn-primary">Buy now</a>
+          {% if current_user.is_authenticated %}
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Favourite</a>
+            <div class="dropdown-menu">
+                {% for wishlist in current_user.wishlists %}
+                    <a class="dropdown-item"
+                       href="/favourite/add/parse/{{ item['price'] }}/{{ item['name'] }}/{{ wishlist.id }}/{{ item['link'].replace('/', '!') }}">
+                      {{ wishlist.name }}</a>
+                {% endfor %}
+                <div class="dropdown-divider"></div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="column">
+    {% for item in data_products[3::4] %}
+      <div class="card mb-4" style="width: 18rem;">
+        <img class="card-img-top" src={{item['img'].split(';')[0]}} alt="Card image cap">
+        <div class="card-body">
+          <h5 class="card-title">{{item['name']}}</h5>
+          <p class="card-text">Price {{item['price']}}</p>
+          <a href={{item['link']}} class="btn btn-primary">Buy now</a>
+          {% if current_user.is_authenticated %}
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Favourite</a>
+            <div class="dropdown-menu">
+                {% for wishlist in current_user.wishlists %}
+                    <a class="dropdown-item"
+                       href="/favourite/add/parse/{{ item['price'] }}/{{ item['name'] }}/{{ wishlist.id }}/{{ item['link'].replace('/', '!') }}">
+                      {{ wishlist.name }}</a>
+                {% endfor %}
+                <div class="dropdown-divider"></div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}
